@@ -10,10 +10,15 @@ The **sender** eventually gets the response and calculates the difference betwee
 This package has been created and built like this:
 
 > esrocos_create_project gr740-round_trip_time
+
 > esrocos_fetch_dependencies
+
 > esrocos_edit_project
+
 > amake
+
 > cp gr740-round_trip_time_dp.aadl DeploymentView.aadl
+
 > ./build-script.sh
 
 When the partitions have been created, the **gr740_partition** has to be flashed onto the **GR740 board** using GRMON2.
