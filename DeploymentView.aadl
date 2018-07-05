@@ -1,0 +1,179 @@
+---------------------------------------------------
+-- AADL2.1
+-- TASTE type deploymentview
+-- 
+-- generated code: do not edit
+---------------------------------------------------
+
+PACKAGE deploymentview::DV::Node1
+PUBLIC
+
+WITH ocarina_buses;
+WITH ocarina_drivers;
+WITH Taste;
+WITH Deployment;
+WITH TASTE_DV_Properties;
+PROCESS gr740_partition
+END gr740_partition;
+
+PROCESS IMPLEMENTATION gr740_partition.others
+END gr740_partition.others;
+
+DEVICE leon_ethernet_greth
+EXTENDS ocarina_drivers::leon_ethernet
+FEATURES
+  link : REFINED TO REQUIRES BUS ACCESS ocarina_buses::ip.i {
+    Taste::coordinates => "174483 113225";
+  };
+PROPERTIES
+  Taste::Interface_Coordinates => "167082 133619" APPLIES TO link;
+  Deployment::Help => "Write your ASN.1 configuration here";
+  Deployment::Configuration => "{devname ""greth1"", address ""192.168.0.42"", gateway ""192.168.0.1"", netmask ""255.255.255.0"", version ipv4, port 5118 }";
+  Deployment::Config => "/home/taste/tool-inst/include/ocarina/runtime/polyorb-hi-c/src/drivers/configuration/ip.asn";
+  Deployment::Version => "0.1beta";
+END leon_ethernet_greth;
+
+DEVICE IMPLEMENTATION leon_ethernet_greth.others
+EXTENDS ocarina_drivers::leon_ethernet.greth
+END leon_ethernet_greth.others;
+
+END deploymentview::DV::Node1;
+
+PACKAGE deploymentview::DV::Node2
+PUBLIC
+
+WITH ocarina_buses;
+WITH ocarina_drivers;
+WITH Taste;
+WITH Deployment;
+WITH TASTE_DV_Properties;
+PROCESS x86_partition
+END x86_partition;
+
+PROCESS IMPLEMENTATION x86_partition.others
+END x86_partition.others;
+
+DEVICE generic_sockets_ip_pohic
+EXTENDS ocarina_drivers::generic_sockets_ip
+FEATURES
+  link : REFINED TO REQUIRES BUS ACCESS ocarina_buses::ip.i {
+    Taste::coordinates => "106297 114800";
+  };
+PROPERTIES
+  Taste::Interface_Coordinates => "117635 134091" APPLIES TO link;
+  Deployment::Help => "Write your ASN.1 configuration here";
+  Deployment::Configuration => "{devname ""enp0s3"", address ""192.168.0.151"", port 5116}";
+  Deployment::Config => "/home/taste/tool-inst/include/ocarina/runtime/polyorb-hi-c/src/drivers/configuration/ip.asn";
+  Deployment::Version => "0.1beta";
+END generic_sockets_ip_pohic;
+
+DEVICE IMPLEMENTATION generic_sockets_ip_pohic.others
+EXTENDS ocarina_drivers::generic_sockets_ip.pohic
+END generic_sockets_ip_pohic.others;
+
+END deploymentview::DV::Node2;
+
+PACKAGE deploymentview::DV
+PUBLIC
+
+WITH interfaceview::IV::receiver;
+WITH ocarina_processors_leon;
+WITH deploymentview::DV::Node1;
+WITH interfaceview::IV::sender;
+WITH ocarina_processors_x86;
+WITH deploymentview::DV::Node2;
+WITH ocarina_buses;
+WITH Taste;
+WITH Deployment;
+WITH interfaceview::IV;
+WITH TASTE_DV_Properties;
+SYSTEM Node1
+FEATURES
+  leon_ethernet_greth_ip_i : REQUIRES BUS ACCESS ocarina_buses::ip.i;
+END Node1;
+
+SYSTEM IMPLEMENTATION Node1.others
+SUBCOMPONENTS
+  IV_receiver : SYSTEM interfaceview::IV::receiver::receiver.others {
+    Taste::FunctionName => "receiver";
+  };
+  gr740_partition : PROCESS deploymentview::DV::Node1::gr740_partition.others {
+    Taste::coordinates => "165398 73764 189082 94059";
+    Deployment::Port_Number => 0;
+  };
+  gr740_rtems51_posix : PROCESSOR ocarina_processors_leon::gr740.rtems51_posix {
+    Taste::coordinates => "162437 67966 192042 96958";
+  };
+  leon_ethernet_greth : DEVICE deploymentview::DV::Node1::leon_ethernet_greth.others {
+    Taste::coordinates => "162830 103304 192436 113225";
+  };
+CONNECTIONS
+  leon_ethernet_greth_ip_i_link : BUS ACCESS leon_ethernet_greth_ip_i -> leon_ethernet_greth.link;
+PROPERTIES
+  Taste::APLC_Binding => (reference (gr740_partition)) APPLIES TO IV_receiver;
+  Actual_Processor_Binding => (reference (gr740_rtems51_posix)) APPLIES TO gr740_partition;
+  Actual_Processor_Binding => (reference (gr740_rtems51_posix)) APPLIES TO leon_ethernet_greth;
+END Node1.others;
+
+SYSTEM Node2
+FEATURES
+  generic_sockets_ip_pohic_ip_i : REQUIRES BUS ACCESS ocarina_buses::ip.i;
+END Node2;
+
+SYSTEM IMPLEMENTATION Node2.others
+SUBCOMPONENTS
+  IV_sender : SYSTEM interfaceview::IV::sender::sender.others {
+    Taste::FunctionName => "sender";
+  };
+  x86_partition : PROCESS deploymentview::DV::Node2::x86_partition.others {
+    Taste::coordinates => "95191 72631 118977 94468";
+    Deployment::Port_Number => 0;
+  };
+  x86_linux : PROCESSOR ocarina_processors_x86::x86.linux {
+    Taste::coordinates => "92218 66392 121950 97588";
+  };
+  generic_sockets_ip_pohic : DEVICE deploymentview::DV::Node2::generic_sockets_ip_pohic.others {
+    Taste::coordinates => "92753 104564 120627 114800";
+  };
+CONNECTIONS
+  generic_sockets_ip_pohic_ip_i_link : BUS ACCESS generic_sockets_ip_pohic_ip_i -> generic_sockets_ip_pohic.link;
+PROPERTIES
+  Taste::APLC_Binding => (reference (x86_partition)) APPLIES TO IV_sender;
+  Actual_Processor_Binding => (reference (x86_linux)) APPLIES TO x86_partition;
+  Actual_Processor_Binding => (reference (x86_linux)) APPLIES TO generic_sockets_ip_pohic;
+END Node2.others;
+
+SYSTEM deploymentview
+END deploymentview;
+
+SYSTEM IMPLEMENTATION deploymentview.others
+SUBCOMPONENTS
+  Node1 : SYSTEM Node1.others {
+    Taste::coordinates => "158736 59683 195743 117950";
+  };
+  Node2 : SYSTEM Node2.others {
+    Taste::coordinates => "88502 57479 125666 117792";
+  };
+  ip_i : BUS ocarina_buses::ip.i {
+    Taste::coordinates => "117635 126296 167082 141886";
+  };
+  interfaceview : SYSTEM interfaceview::IV::interfaceview.others;
+CONNECTIONS
+  Connection1 : BUS ACCESS ip_i -> Node1.leon_ethernet_greth_ip_i {
+    Taste::coordinates => "174483 113225 174483 116375 174562 116375 174562 133619 167082 133619";
+  };
+  Connection2 : BUS ACCESS ip_i -> Node2.generic_sockets_ip_pohic_ip_i {
+    Taste::coordinates => "106297 114800 106297 134091 117635 134091";
+  };
+PROPERTIES
+  Actual_Connection_Binding => (reference (ip_i)) APPLIES TO interfaceview.sender_PI_resp_receiver_RI_resp;
+  Actual_Connection_Binding => (reference (ip_i)) APPLIES TO interfaceview.receiver_PI_req_sender_RI_req;
+END deploymentview.others;
+
+PROPERTIES
+  Taste::coordinates => "0 0 297000 210000";
+  Taste::version => "2.0";
+  Taste::interfaceView => "gr740-round_trip_time_iv.aadl";
+  Taste::HWLibraries => ("../../tool-inst/share/ocarina/AADLv2/ocarina_components.aadl");
+END deploymentview::DV;
+

@@ -1,0 +1,182 @@
+---------------------------------------------------
+-- AADL2.1
+-- TASTE type interfaceview
+-- 
+-- generated code: do not edit
+---------------------------------------------------
+
+PACKAGE interfaceview::FV::sender
+PUBLIC
+
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SUBPROGRAM PI_resp
+FEATURES
+  timestamp : IN PARAMETER DataView::Base_Time {
+    Taste::encoding => NATIVE;
+  };
+PROPERTIES
+  Taste::Associated_Queue_Size => 1;
+END PI_resp;
+
+SUBPROGRAM IMPLEMENTATION PI_resp.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_resp.others;
+
+SUBPROGRAM PI_clock
+PROPERTIES
+  Taste::Associated_Queue_Size => 1;
+END PI_clock;
+
+SUBPROGRAM IMPLEMENTATION PI_clock.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_clock.others;
+
+SUBPROGRAM RI_req
+FEATURES
+  timestamp : IN PARAMETER DataView::Base_Time {
+    Taste::encoding => NATIVE;
+  };
+END RI_req;
+
+SUBPROGRAM IMPLEMENTATION RI_req.others
+END RI_req.others;
+
+END interfaceview::FV::sender;
+
+PACKAGE interfaceview::FV::receiver
+PUBLIC
+
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SUBPROGRAM PI_req
+FEATURES
+  timestamp : IN PARAMETER DataView::Base_Time {
+    Taste::encoding => NATIVE;
+  };
+PROPERTIES
+  Taste::Associated_Queue_Size => 1;
+END PI_req;
+
+SUBPROGRAM IMPLEMENTATION PI_req.others
+PROPERTIES
+  Compute_Execution_Time => 0 ms .. 0 ms;
+END PI_req.others;
+
+SUBPROGRAM RI_resp
+FEATURES
+  timestamp : IN PARAMETER DataView::Base_Time {
+    Taste::encoding => NATIVE;
+  };
+END RI_resp;
+
+SUBPROGRAM IMPLEMENTATION RI_resp.others
+END RI_resp.others;
+
+END interfaceview::FV::receiver;
+
+PACKAGE interfaceview::IV
+PUBLIC
+
+WITH interfaceview::FV::receiver;
+WITH interfaceview::FV::sender;
+WITH Taste;
+WITH DataView;
+WITH TASTE_IV_Properties;
+SYSTEM sender
+FEATURES
+  PI_resp : PROVIDES SUBPROGRAM ACCESS interfaceview::FV::sender::PI_resp.others {
+    Taste::coordinates => "127713 73856";
+    Taste::RCMoperationKind => sporadic;
+    Taste::RCMperiod => 0 ms;
+    Taste::Deadline => 0 ms;
+    Taste::InterfaceName => "resp";
+  };
+  PI_clock : PROVIDES SUBPROGRAM ACCESS interfaceview::FV::sender::PI_clock.others {
+    Taste::coordinates => "97320 67244";
+    Taste::RCMoperationKind => cyclic;
+    Taste::RCMperiod => 1000 ms;
+    Taste::Deadline => 0 ms;
+    Taste::InterfaceName => "clock";
+  };
+  RI_req : REQUIRES SUBPROGRAM ACCESS interfaceview::FV::receiver::PI_req.others {
+    Taste::coordinates => "127713 64094";
+    Taste::RCMoperationKind => any;
+    Taste::InterfaceName => "req";
+    Taste::labelInheritance => "true";
+  };
+PROPERTIES
+  Source_Language => (C);
+  Taste::Active_Interfaces => any;
+END sender;
+
+SYSTEM IMPLEMENTATION sender.others
+SUBCOMPONENTS
+  resp_impl : SUBPROGRAM interfaceview::FV::sender::PI_resp.others;
+  clock_impl : SUBPROGRAM interfaceview::FV::sender::PI_clock.others;
+CONNECTIONS
+  OpToPICnx_resp_impl : SUBPROGRAM ACCESS resp_impl -> PI_resp;
+  OpToPICnx_clock_impl : SUBPROGRAM ACCESS clock_impl -> PI_clock;
+END sender.others;
+
+SYSTEM receiver
+FEATURES
+  PI_req : PROVIDES SUBPROGRAM ACCESS interfaceview::FV::receiver::PI_req.others {
+    Taste::coordinates => "164405 63780";
+    Taste::RCMoperationKind => sporadic;
+    Taste::RCMperiod => 0 ms;
+    Taste::Deadline => 0 ms;
+    Taste::InterfaceName => "req";
+  };
+  RI_resp : REQUIRES SUBPROGRAM ACCESS interfaceview::FV::sender::PI_resp.others {
+    Taste::coordinates => "164405 74017";
+    Taste::RCMoperationKind => any;
+    Taste::InterfaceName => "resp";
+    Taste::labelInheritance => "true";
+  };
+PROPERTIES
+  Source_Language => (C);
+  Taste::Active_Interfaces => any;
+END receiver;
+
+SYSTEM IMPLEMENTATION receiver.others
+SUBCOMPONENTS
+  req_impl : SUBPROGRAM interfaceview::FV::receiver::PI_req.others;
+CONNECTIONS
+  OpToPICnx_req_impl : SUBPROGRAM ACCESS req_impl -> PI_req;
+END receiver.others;
+
+SYSTEM interfaceview
+PROPERTIES
+  Taste::dataView => ("DataView");
+  Taste::dataViewPath => ("gr740-round_trip_time_dv.aadl");
+END interfaceview;
+
+SYSTEM IMPLEMENTATION interfaceview.others
+SUBCOMPONENTS
+  sender : SYSTEM interfaceview::IV::sender.others {
+    Taste::coordinates => "97320 56219 127713 78896";
+  };
+  receiver : SYSTEM interfaceview::IV::receiver.others {
+    Taste::coordinates => "164405 58109 191648 78738";
+  };
+CONNECTIONS
+  sender_PI_resp_receiver_RI_resp : SUBPROGRAM ACCESS sender.PI_resp -> receiver.RI_resp {
+    Taste::coordinates => "164405 74017 146059 74017 146059 73856 127713 73856";
+  };
+  receiver_PI_req_sender_RI_req : SUBPROGRAM ACCESS receiver.PI_req -> sender.RI_req {
+    Taste::coordinates => "127713 64094 146059 64094 146059 63780 164405 63780";
+  };
+END interfaceview.others;
+
+PROPERTIES
+  Taste::dataView => ("DataView");
+  Taste::dataViewPath => ("gr740-round_trip_time_dv.aadl");
+  Taste::coordinates => "0 0 297000 210000";
+  Taste::version => "1.3";
+END interfaceview::IV;
+
